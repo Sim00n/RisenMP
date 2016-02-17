@@ -120,33 +120,46 @@ public:
 	}
 };
 
+/**
+ * @brief Implementation of bCString class based on Genome engine implementation.
+ *
+ * This class is located in SharedBase.dll
+ */
 class bCString
 {
 private:
+	/// Structure holding string data.
 	struct bCStringData
 	{
-		unsigned int m_size;
-		unsigned int m_unknown;
+		unsigned m_size; //< Amount of the stored characters (without null terminator)
+		unsigned m_refs; //< Reference count of this data. (Probably: bCAtomic<unsigned> m_refs)
 
+		/// Constructor.
 		bCStringData()
 			: m_size(0)
-			, m_unknown(0)
+			, m_refs(0)
 		{
-
 		}
 	};
 
+	/// The string buffer.
 	char *m_buffer;
 public:
-	explicit bCString(const char *buffer)
+	/// Explict constructor creating string from standard char array.
+	explicit bCString(const char *const buffer)
 	{
 	    assert(buffer);
 
 		const size_t bufferSize = strlen(buffer);
 
-		char *dataBuffer = new char[8 + bufferSize + 1];
+		char *const dataBuffer = new char[8 + bufferSize + 1];
 
 		bCStringData *const data = new (dataBuffer) bCStringData;
+		
+		// As we are running only in one thread for now we can simply set
+		// reference count here to 1 without need of doing atomic operation.
+		data->m_refs = 1;
+
 		data->m_size = static_cast<unsigned>(bufferSize);
 
 		m_buffer = static_cast<char *>(dataBuffer + 8);
@@ -155,6 +168,12 @@ public:
 		m_buffer[bufferSize] = 0;
 	}
 
+	/**
+	 * @name Set of the methods that are removed for now as we do not handle them correctly.
+	 *
+	 * @todo: Implement this set of methods.
+	 */
+	//@{
 	bCString(void) = delete;
 	bCString(const bCString&) = delete;
 	bCString(bCString&&) = delete;
@@ -162,15 +181,20 @@ public:
 	void operator=(const char *) = delete;
 	void operator=(const bString&) = delete;
 	void operator=(bString&&) = delete;
+	//@}
 
+	/// Destructor.
 	~bCString()
 	{
+		if (!m_buffer) {
+			return;
+		}
+
 		char *const data = (m_buffer - 8);
-		assert(data);
 		if (data) {
 			delete []data;
 		}
-        m_buffer = nullptr;
+		m_buffer = nullptr;
 	}
 };
 
