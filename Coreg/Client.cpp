@@ -140,6 +140,8 @@ private:
 public:
 	explicit bCString(const char *buffer)
 	{
+	    assert(buffer);
+
 		const size_t bufferSize = strlen(buffer);
 
 		char *dataBuffer = new char[8 + bufferSize + 1];
@@ -155,14 +157,20 @@ public:
 
 	bCString(void) = delete;
 	bCString(const bCString&) = delete;
+	bCString(bCString&&) = delete;
+
+	void operator=(const char *) = delete;
+	void operator=(const bString&) = delete;
+	void operator=(bString&&) = delete;
 
 	~bCString()
 	{
 		char *const data = (m_buffer - 8);
 		assert(data);
 		if (data) {
-			delete data;
+			delete []data;
 		}
+        m_buffer = nullptr;
 	}
 };
 
