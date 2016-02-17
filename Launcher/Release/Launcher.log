@@ -1,0 +1,34 @@
+﻿Build started 2/11/2016 22:24:36.
+     1>Project "c:\Users\Sim00n\documents\visual studio 2015\Projects\G1mp\Launcher\Launcher.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp Shared\Debug.cpp Shared\System.Windows.cpp
+         Main.cpp
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\sdk\steamapi\matchmakingtypes.h(45): error C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\string.h(346): note: see declaration of 'strncpy'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\Defines.h(34): error C2019: expected preprocessor directive, found '#'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(68): error C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\string.h(119): note: see declaration of 'strcpy'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(74): error C4996: 'wcscpy': This function or variable may be unsafe. Consider using wcscpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstring.h(121): note: see declaration of 'wcscpy'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(92): error C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\string.h(90): note: see declaration of 'strcat'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(98): error C4996: 'wcscat': This function or variable may be unsafe. Consider using wcscat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstring.h(101): note: see declaration of 'wcscat'
+         Debug.cpp
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\Defines.h(34): error C2019: expected preprocessor directive, found '#'
+     1>Shared\Debug.cpp(78): fatal error C1189: #error:  Define variant for your operating system.
+         System.Windows.cpp
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\Defines.h(34): error C2019: expected preprocessor directive, found '#'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(68): error C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\string.h(119): note: see declaration of 'strcpy'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(74): error C4996: 'wcscpy': This function or variable may be unsafe. Consider using wcscpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstring.h(121): note: see declaration of 'wcscpy'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(92): error C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\string.h(90): note: see declaration of 'strcat'
+     1>c:\users\sim00n\documents\visual studio 2015\projects\g1mp\launcher\shared\String/StringLib.h(98): error C4996: 'wcscat': This function or variable may be unsafe. Consider using wcscat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstring.h(101): note: see declaration of 'wcscat'
+     1>Done Building Project "c:\Users\Sim00n\documents\visual studio 2015\Projects\G1mp\Launcher\Launcher.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.49
