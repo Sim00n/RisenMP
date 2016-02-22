@@ -8,5 +8,6 @@ extern unsigned MainLoopReturn;
 
 extern unsigned SetWorldPositionAddr;
 extern unsigned GetWorldPositionAddr;
-extern unsigned GetLocalPositionAddr;
+extern unsigned SetLocalRotationAddr;
+extern unsigned GetLocalRotationAddr;
 extern unsigned SpawnEntityAddr;

@@ -1,4 +1,4 @@
-﻿Build started 2/16/2016 18:46:16.
+﻿Build started 2/22/2016 00:21:51.
      1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Coreg\Coreg.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Launcher" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D COREG_EXPORTS /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D OS_WINDOWS /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Client.cpp
@@ -12,4 +12,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.70
+Time Elapsed 00:00:02.63

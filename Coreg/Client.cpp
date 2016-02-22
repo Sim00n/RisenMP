@@ -1,6 +1,7 @@
 #include "Client.h"
 #include "hooking/Hooking.h"
 #include "tools/address.h"
+#include <cmath>
 
 #include <assert.h>
 
@@ -12,7 +13,8 @@ extern unsigned MainLoopReturn = 0;
 
 extern unsigned SetWorldPositionAddr = 0;
 extern unsigned GetWorldPositionAddr = 0;
-extern unsigned GetLocalPositionAddr = 0;
+extern unsigned SetLocalRotationAddr = 0;
+extern unsigned GetLocalRotationAddr = 0;
 extern unsigned SpawnEntityAddr = 0;
 
 Client *Client::Instance = nullptr;
@@ -44,14 +46,20 @@ Client::Client(void)
 	Hooking::Initialize();
 	EngineBase = (unsigned)GetModuleHandle("Engine.dll");
 	GameBase = (unsigned)GetModuleHandle("Game.dll");
-	//ScriptBase = (unsigned)GetModuleHandle("Script.dll");
 
+	// Functions
 	SetWorldPositionAddr = EngineBase + 0x002E8700;
 	GetWorldPositionAddr = EngineBase + 0x002E77A0;
-	GetLocalPositionAddr = EngineBase + 0x002E77D0;
+	SetLocalRotationAddr = EngineBase + 0x002E78C0;
+	GetLocalRotationAddr = EngineBase + 0x002E7860;
+	
+	// Class instances
 	SpawnEntityAddr = GameBase + 0x002C8AC0;
 	
+	// Return Addresses
 	MainLoopReturn = EngineBase+ 0x00061D86;
+
+	// Hooks
 	Hooking::JmpHook(EngineBase + 0x00061D80, (DWORD)MainLoopHook);
 }
 
@@ -82,6 +90,10 @@ struct bCMatrix
 	}
 };
 
+struct bCQuaternion {
+	float x, y, z, theta;
+};
+
 class eCEntity
 {
 public:
@@ -94,7 +106,8 @@ class eCGeometryEntity : public eCEntity {
 public:
 	void SetWorldPosition(const Vec3 &newPos);
 	void GetWorldPosition(Vec3 &position);
-	void GetLocalPosition(Vec3 &position);
+	void SetLocalRotation(const bCQuaternion &newRotation);
+	void GetLocalRotation(bCQuaternion &rotation);
 };
 class eCDynamicEntity : public eCGeometryEntity {};
 
@@ -103,7 +116,6 @@ class eCEntityProxy
 private:
 	struct envlope_level_1
 	{
-
 		eCEntity * entity;
 	};
 
@@ -131,15 +143,11 @@ private:
 	/// Structure holding string data.
 	struct bCStringData
 	{
-		unsigned m_size; //< Amount of the stored characters (without null terminator)
-		unsigned m_refs; //< Reference count of this data. (Probably: bCAtomic<unsigned> m_refs)
+		unsigned m_size; // Amount of the stored characters (without null terminator)
+		unsigned m_refs; // Reference count of this data. (Probably: bCAtomic<unsigned> m_refs)
 
 		/// Constructor.
-		bCStringData()
-			: m_size(0)
-			, m_refs(0)
-		{
-		}
+		bCStringData() : m_size(0), m_refs(0) {}
 	};
 
 	/// The string buffer.
@@ -179,8 +187,8 @@ public:
 	bCString(bCString&&) = delete;
 
 	void operator=(const char *) = delete;
-	void operator=(const bString&) = delete;
-	void operator=(bString&&) = delete;
+	void operator=(const bCString&) = delete;
+	void operator=(bCString&&) = delete;
 	//@}
 
 	/// Destructor.
@@ -205,7 +213,7 @@ public:
 	eCEntityProxy player;
 	eCEntityProxy originalPlayer;
 
-	eCEntity * SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool);
+	eCEntity * SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool, bCMatrix &secondMatrix, char unkChar, float unkFloat);
 
 	eCDynamicEntity *GetPlayer(void) const
 	{
@@ -233,15 +241,23 @@ void _declspec(naked) eCGeometryEntity::GetWorldPosition(Vec3 &position)
 	}
 }
 
-void _declspec(naked) eCGeometryEntity::GetLocalPosition(Vec3 &position)
+void _declspec(naked) eCGeometryEntity::SetLocalRotation(const bCQuaternion &newRotation)
 {
 	_asm {
-		mov eax, GetLocalPositionAddr
+		mov eax, SetLocalRotationAddr
 		jmp eax
 	}
 }
 
-eCEntity _declspec(naked) * gCSession::SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool)
+void _declspec(naked) eCGeometryEntity::GetLocalRotation(bCQuaternion &rotation)
+{
+	_asm {
+		mov eax, GetLocalRotationAddr
+		jmp eax
+	}
+}
+
+eCEntity _declspec(naked) * gCSession::SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool, bCMatrix &secondMatrix, char unkChar, float unkFloat)
 {
 	_asm {
 		mov eax, SpawnEntityAddr
@@ -251,11 +267,13 @@ eCEntity _declspec(naked) * gCSession::SpawnEntity(const bCString &model, const 
 
 void Client::Pulse()
 {
+	// Loading Script.dll here instead of the Client's constructor because Pirania
 	ScriptBase = (unsigned)GetModuleHandle("Script.dll");
 	if (!ScriptBase) {
 		return;
 	}
 
+	// Init hooking for Script.dll
 	static bool postInit = false;
 	if (postInit) {
 		Hooking::PostInit();
@@ -271,14 +289,8 @@ void Client::Pulse()
 		if (GetAsyncKeyState(VK_F5))
 		{
 			Vec3 pos;
-
 			entity->GetWorldPosition(pos);
 			printf("WorldPos: %f, %f, %f\n", pos.x, pos.y, pos.z);
-
-			entity->GetLocalPosition(pos);
-			printf("LocalPos: %f, %f, %f\n", pos.x, pos.y, pos.z);
-
-			printf("----\n");
 		}
 
 		if (GetAsyncKeyState(VK_F6))
@@ -291,20 +303,46 @@ void Client::Pulse()
 			entity->SetWorldPosition(pos);
 		}
 
+		if (GetAsyncKeyState(VK_F7))
+		{
+			bCQuaternion rotation;
+			entity->GetLocalRotation(rotation);
+			printf("Rotation: %f, %f, %f, %f\n", rotation.x, rotation.y, rotation.z, rotation.theta);
+			printf("-----\n");
+
+		}
+
+		if (GetAsyncKeyState(VK_F4))
+		{
+			bCQuaternion rotation;
+			entity->GetLocalRotation(rotation);
+			rotation.x = 0.0;
+			rotation.y = 0.0;
+			rotation.z = 0.0;
+			rotation.theta = 1.0;
+			entity->SetLocalRotation(rotation);
+			printf("Rotation set.\n");
+		}
+
 		/*if (GetAsyncKeyState(VK_F7))
 		{
 			bCString str("PC_HERO");
-			bCMatrix mtx;
+			bCMatrix mtx, mtx2;
+
+			char testChar = '0';
+			float testFloat = 0.0;
 
 			Vec3 playerPos;
-			entity->GetLocalPosition(playerPos);
+			entity->GetWorldPosition(playerPos);
 			
 			playerPos.x += 50;
 
 			mtx.Identity();
+			mtx2.Identity();
 			mtx.Transform(playerPos);
-			eCGeometryEntity *bot = static_cast<eCGeometryEntity *>(gcsession->SpawnEntity(str, mtx, true));
-			assert(bot);
+			mtx2.Transform(playerPos);
+			eCGeometryEntity *bot = static_cast<eCGeometryEntity *>(gcsession->SpawnEntity(str, mtx, false, mtx2, testChar, testFloat));
+			//assert(bot);
 
 		}*/
 	}
