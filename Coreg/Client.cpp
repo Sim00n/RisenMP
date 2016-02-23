@@ -1,8 +1,7 @@
 #include "Client.h"
 #include "hooking/Hooking.h"
 #include "tools/address.h"
-#include <cmath>
-
+#include "tools/tools.h"
 #include <assert.h>
 
 extern unsigned EngineBase = 0;
@@ -10,12 +9,19 @@ extern unsigned GameBase = 0;
 extern unsigned ScriptBase = 0;
 
 extern unsigned MainLoopReturn = 0;
+extern unsigned GetSkillValueReturn = 0;
 
 extern unsigned SetWorldPositionAddr = 0;
 extern unsigned GetWorldPositionAddr = 0;
 extern unsigned SetLocalRotationAddr = 0;
 extern unsigned GetLocalRotationAddr = 0;
 extern unsigned SpawnEntityAddr = 0;
+extern unsigned KillAddr = 0;
+extern unsigned GetSkillValueAddr = 0;
+extern unsigned SetSkillValueAddr = 0;
+extern unsigned GetPropertySetAddr = 0;
+extern unsigned GetSkillMaxValueAddr = 0;
+extern unsigned GetSkillBaseValueAddr = 0;
 
 Client *Client::Instance = nullptr;
 
@@ -40,6 +46,33 @@ void _declspec(naked) MainLoopHook()
 	}
 }
 
+static void GetSkillValueListener(int test)
+{
+	if(GetAsyncKeyState(VK_F2))
+		printf("GetSkillValue: d: %d, h: %x\n", test, test);
+}
+
+void _declspec(naked) GetSkillValueHook()
+{
+	_asm {
+		pushad
+			push [esp + 0x20 + 8]
+			call GetSkillValueListener
+			add esp, 0x04
+		popad
+
+		push edi
+		mov edi, [esp + 0x0C]
+		push edi
+		jmp GetSkillValueReturn;
+
+		//.text:202D8D60                 push    esi
+		//.text : 202D8D61                 push    edi
+		//.text : 202D8D62                 mov     edi, [esp + 0Ch]
+		//.text : 202D8D66                 push    edi
+	}
+}
+
 Client::Client(void)
 {
 	Client::Instance = this;
@@ -52,46 +85,29 @@ Client::Client(void)
 	GetWorldPositionAddr = EngineBase + 0x002E77A0;
 	SetLocalRotationAddr = EngineBase + 0x002E78C0;
 	GetLocalRotationAddr = EngineBase + 0x002E7860;
+	KillAddr = EngineBase + 0x002DF210;
+	GetSkillValueAddr = GameBase + 0x002D8D60;
+	SetSkillValueAddr = GameBase + 0x002D8A70;
+	GetPropertySetAddr = EngineBase + 0x002E1160;
+	GetSkillMaxValueAddr = GameBase + 0x002D8FF0;
+	GetSkillBaseValueAddr = GameBase + 0x002D8A50;
 	
 	// Class instances
 	SpawnEntityAddr = GameBase + 0x002C8AC0;
 	
 	// Return Addresses
 	MainLoopReturn = EngineBase+ 0x00061D86;
+	GetSkillValueReturn = GameBase + 0x002D8D67;
 
 	// Hooks
 	Hooking::JmpHook(EngineBase + 0x00061D80, (DWORD)MainLoopHook);
+	Hooking::JmpHook(GameBase + 0x002D8D61, (DWORD)GetSkillValueHook);
 }
 
-struct Vec3 {
-	float x, y, z;
-};
-
-struct bCMatrix
+class eCEntityPropertySet 
 {
-	float matrix[4][4];
-
-	void Identity(void)
-	{
-		for (int x = 0; x < 4; ++x) {
-			for (int y = 0; y < 4; ++y) {
-				matrix[x][y] = 0.0f;
-			}
-		}
-
-		matrix[0][0] = matrix[1][1] = matrix[2][2] = matrix[3][3] = 1.0f;
-	}
-
-	void Transform(const Vec3 &pos)
-	{
-		matrix[3][0] = pos.x;
-		matrix[3][1] = pos.y;
-		matrix[3][2] = pos.z;
-	}
-};
-
-struct bCQuaternion {
-	float x, y, z, theta;
+public:
+	virtual void IsCopyable(void) = 0;
 };
 
 class eCEntity
@@ -100,6 +116,10 @@ public:
 	unsigned vtab;
 	unsigned char pad[48];
 	bCMatrix matrix;
+
+	void Kill();
+	eCEntityPropertySet *GetPropertySet(bCString const &str);
+
 };
 
 class eCGeometryEntity : public eCEntity {
@@ -132,80 +152,6 @@ public:
 	}
 };
 
-/**
- * @brief Implementation of bCString class based on Genome engine implementation.
- *
- * This class is located in SharedBase.dll
- */
-class bCString
-{
-private:
-	/// Structure holding string data.
-	struct bCStringData
-	{
-		unsigned m_size; // Amount of the stored characters (without null terminator)
-		unsigned m_refs; // Reference count of this data. (Probably: bCAtomic<unsigned> m_refs)
-
-		/// Constructor.
-		bCStringData() : m_size(0), m_refs(0) {}
-	};
-
-	/// The string buffer.
-	char *m_buffer;
-public:
-	/// Explict constructor creating string from standard char array.
-	explicit bCString(const char *const buffer)
-	{
-	    assert(buffer);
-
-		const size_t bufferSize = strlen(buffer);
-
-		char *const dataBuffer = new char[8 + bufferSize + 1];
-
-		bCStringData *const data = new (dataBuffer) bCStringData;
-		
-		// As we are running only in one thread for now we can simply set
-		// reference count here to 1 without need of doing atomic operation.
-		data->m_refs = 1;
-
-		data->m_size = static_cast<unsigned>(bufferSize);
-
-		m_buffer = static_cast<char *>(dataBuffer + 8);
-
-		memcpy(m_buffer, buffer, bufferSize);
-		m_buffer[bufferSize] = 0;
-	}
-
-	/**
-	 * @name Set of the methods that are removed for now as we do not handle them correctly.
-	 *
-	 * @todo: Implement this set of methods.
-	 */
-	//@{
-	bCString(void) = delete;
-	bCString(const bCString&) = delete;
-	bCString(bCString&&) = delete;
-
-	void operator=(const char *) = delete;
-	void operator=(const bCString&) = delete;
-	void operator=(bCString&&) = delete;
-	//@}
-
-	/// Destructor.
-	~bCString()
-	{
-		if (!m_buffer) {
-			return;
-		}
-
-		char *const data = (m_buffer - 8);
-		if (data) {
-			delete []data;
-		}
-		m_buffer = nullptr;
-	}
-};
-
 class gCSession
 {
 public:
@@ -213,7 +159,7 @@ public:
 	eCEntityProxy player;
 	eCEntityProxy originalPlayer;
 
-	eCEntity * SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool, bCMatrix &secondMatrix, char unkChar, float unkFloat);
+	eCEntity * SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool);
 
 	eCDynamicEntity *GetPlayer(void) const
 	{
@@ -224,6 +170,24 @@ public:
 		return static_cast<eCDynamicEntity *>(entity);
 	}
 };
+
+class gCSkills_PS : public eCEntityPropertySet
+{
+public:
+	unsigned char pad[72];
+	long GetSkillValue(const int &unkInt);
+	void SetSkillValue(int unkInt, long value);
+	long GetSkillMaxValue(const int &test);
+	int GetSkillBaseValue(const int &test);
+};
+
+void _declspec(naked) eCEntity::Kill()
+{
+	_asm {
+		mov eax, KillAddr
+		jmp eax
+	}
+}
 
 void _declspec(naked) eCGeometryEntity::SetWorldPosition(const Vec3 &newPos)
 {
@@ -257,13 +221,54 @@ void _declspec(naked) eCGeometryEntity::GetLocalRotation(bCQuaternion &rotation)
 	}
 }
 
-eCEntity _declspec(naked) * gCSession::SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool, bCMatrix &secondMatrix, char unkChar, float unkFloat)
+eCEntity _declspec(naked) * gCSession::SpawnEntity(const bCString &model, const bCMatrix &spawnLocation, const bool unkBool)
 {
 	_asm {
 		mov eax, SpawnEntityAddr
 		jmp eax
 	}
 }
+
+long _declspec(naked) gCSkills_PS::GetSkillValue(const int &unkInt) {
+	_asm {
+		mov eax, GetSkillValueAddr
+		jmp eax
+	}
+}
+
+void _declspec(naked) gCSkills_PS::SetSkillValue(int unkInt, long value)
+{
+	_asm {
+		mov eax, SetSkillValueAddr
+		jmp eax
+	}
+}
+
+long _declspec(naked) gCSkills_PS::GetSkillMaxValue(const int &unkInt)
+{
+	_asm {
+		mov eax, GetSkillMaxValueAddr
+		jmp eax
+	}
+}
+
+int _declspec(naked) gCSkills_PS::GetSkillBaseValue(const int &unkInt)
+{
+	_asm {
+		mov eax, GetSkillBaseValueAddr
+		jmp eax
+	}
+}
+
+eCEntityPropertySet _declspec(naked) * eCEntity::GetPropertySet(bCString const &str)
+{
+	_asm {
+		mov eax, GetPropertySetAddr
+		jmp eax
+	}
+}
+
+bool test = false;
 
 void Client::Pulse()
 {
@@ -285,66 +290,53 @@ void Client::Pulse()
 	if (gcsession)
 	{
 		eCGeometryEntity *const entity = gcsession->GetPlayer();
+		static eCGeometryEntity *bot = nullptr;
+
 		
-		if (GetAsyncKeyState(VK_F5))
-		{
-			Vec3 pos;
-			entity->GetWorldPosition(pos);
-			printf("WorldPos: %f, %f, %f\n", pos.x, pos.y, pos.z);
-		}
 
-		if (GetAsyncKeyState(VK_F6))
-		{
-			Vec3 pos;
-			pos.x = entity->matrix.matrix[3][0] + 500;
-			pos.y = entity->matrix.matrix[3][1] + 500;
-			pos.z = entity->matrix.matrix[3][2] + 500;
-
-			entity->SetWorldPosition(pos);
-		}
-
-		if (GetAsyncKeyState(VK_F7))
-		{
-			bCQuaternion rotation;
-			entity->GetLocalRotation(rotation);
-			printf("Rotation: %f, %f, %f, %f\n", rotation.x, rotation.y, rotation.z, rotation.theta);
-			printf("-----\n");
-
-		}
-
-		if (GetAsyncKeyState(VK_F4))
-		{
-			bCQuaternion rotation;
-			entity->GetLocalRotation(rotation);
-			rotation.x = 0.0;
-			rotation.y = 0.0;
-			rotation.z = 0.0;
-			rotation.theta = 1.0;
-			entity->SetLocalRotation(rotation);
-			printf("Rotation set.\n");
-		}
-
-		/*if (GetAsyncKeyState(VK_F7))
-		{
-			bCString str("PC_HERO");
-			bCMatrix mtx, mtx2;
-
-			char testChar = '0';
-			float testFloat = 0.0;
-
+		if (!test) {
+			bCString str("PC_Hero");
+			bCMatrix mtx;
 			Vec3 playerPos;
+
 			entity->GetWorldPosition(playerPos);
-			
 			playerPos.x += 50;
 
 			mtx.Identity();
-			mtx2.Identity();
 			mtx.Transform(playerPos);
-			mtx2.Transform(playerPos);
-			eCGeometryEntity *bot = static_cast<eCGeometryEntity *>(gcsession->SpawnEntity(str, mtx, false, mtx2, testChar, testFloat));
-			//assert(bot);
 
+			bot = static_cast<eCGeometryEntity *>(gcsession->SpawnEntity(str, mtx, false));
+			test = true;
+		}
+
+		/*if (GetAsyncKeyState(VK_F4))
+		{
+			static eCEntityPropertySet* propertySet = entity->GetPropertySet(bCString("gCSkills_PS"));
+			assert(propertySet);
+			static gCSkills_PS* skills = static_cast<gCSkills_PS*>(propertySet);
+			assert(skills);
+			if (skills)
+				printf("Skill %d Value %d\n", 0, skills->GetSkillValue(0));
 		}*/
+
+		if (GetAsyncKeyState(VK_F3))
+		{
+			static eCEntityPropertySet* propertySet = entity->GetPropertySet(bCString("gCSkills_PS"));
+			assert(propertySet);
+			static gCSkills_PS* skills = static_cast<gCSkills_PS*>(propertySet);
+			assert(skills);
+			
+			if (skills) {
+				printf("Skill %d Value %d\n", 0, skills->GetSkillValue(0));
+				printf("Skill %d Value %d\n", 1, skills->GetSkillValue(1));
+				printf("Skill %d Value %d\n", 2, skills->GetSkillValue(2));
+				printf("Skill %d Value %d\n", 3, skills->GetSkillValue(3));
+				printf("Skill %d Value %d\n", 4, skills->GetSkillValue(4));
+				printf("Skill %d Value %d\n", 5, skills->GetSkillValue(5));
+				printf("Skill %d Value %d\n", 6, skills->GetSkillValue(6));
+				printf("----\n");
+			}
+		}
 	}
 }
 
