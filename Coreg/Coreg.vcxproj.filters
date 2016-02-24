@@ -24,6 +24,15 @@
     <ClCompile Include="hooking\Hooking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\eCEntity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game\gCSkills_PS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mp\NPCManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -41,5 +50,20 @@
     <ClInclude Include="tools\address.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game\gCSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\eCEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\gCSkills_PS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mp\NPCManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="game\Todo.txt" />
   </ItemGroup>
 </Project>

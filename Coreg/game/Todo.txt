@@ -1,0 +1,65 @@
+TODO
+
+ - Make sure throw works same as Java
+
+ - Figure out how to store addresses better
+  - Maybe put the in individual class headers?
+
+ - Figure out if we can get confirmation of call execution from hooked functions.
+  - example: whether a bot was destroyed properly (potential memory leak here)
+
+ - Change \ to /
+
+
+
+
+
+
+
+ // przyk?ad raknetu od Eryka:
+
+RakNet::BitStream data;
+
+const unsigned char sysPacketId = ID_PACKET_MANAGER;
+data.Write(sysPacketId);
+
+const unsigned char packetId = ID_PLAYER_SPAWN;
+data.Write(packetId);
+
+Vec3 position;
+data.Write((const char *)&position, sizeof(Vec3)); // albo data.Write(position); - te? powinno dzia?a?
+
+<19:51:39> "RootKiller": RakNet::Packet
+<19:51:44> "RootKiller": RakNet:: Packet
+<19:51:46> "RootKiller": data
+<19:51:47> "RootKiller": length
+<19:51:54> "RootKiller": data[0] - sysPacketId
+<19:51:56> "RootKiller": data[1] - packetId
+<19:52:04> "RootKiller": data[4 * 3] - pozycja
+
+<19:53:45> "RootKiller": RakNet::BitStream data(data, length, false);
+
+unsigned char sysPacketId = 0;
+if (!data.Read(sysPacketId)) {
+	error("Unable to deserialize packet id!")
+	return;
+}
+
+if(sysPacketId != ID_PACKET_MANAGER) return;
+
+unsigned char packetId = 0;
+if(!data.Read(packetId)) {
+	error("XXYY");
+	return;
+}
+
+switch(packetId)
+{
+case ID_PLAYER_SPAWN:
+  {
+      Vec3 position;
+      data.Read((char *)&position, sizeof(Vec3));
+
+      Game::SpawnPlayer(position);
+  } break;
+}

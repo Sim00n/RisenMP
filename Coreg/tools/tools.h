@@ -1,9 +1,19 @@
 #pragma once
+#include <Windows.h>
 #include <assert.h>
+#include <new>
+
+#ifdef DEBUG_BUILD
+#	define DEBUG_M(msg, ...) printf(msg, __VA_ARGS__)
+#else
+#	define DEBUG_M(msg, ...) do {} while (true)
+#endif
 
 struct Vec3
 {
-	float x, y, z;
+	float x = 0.0f, y = 0.0f, z = 0.0f;
+	Vec3() { this->x = 0.0f; this->y = 0.0f; this->z = 0.0f; }
+	Vec3(float x, float y, float z) { this->x = x; this->y = y; this->z = z; }
 };
 
 struct bCMatrix

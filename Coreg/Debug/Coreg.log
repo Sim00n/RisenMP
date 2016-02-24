@@ -1,15 +1,18 @@
-﻿Build started 2/23/2016 00:07:02.
+﻿Build started 2/23/2016 20:14:01.
      1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Coreg\Coreg.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Launcher" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D COREG_EXPORTS /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D OS_WINDOWS /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Client.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I..\3rdparty\raknet_release\includes /I.\ /I..\Launcher /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D DEBUG_BUILD /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D COREG_EXPORTS /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D OS_WINDOWS /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /wd4996 /analyze- /errorReport:prompt Client.cpp
          Client.cpp
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.dll" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.lib" /MACHINE:X86 /DLL Debug\Client.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.dll" /INCREMENTAL /NOLOGO /LIBPATH:..\3rdparty\raknet_release ws2_32.lib RakNet_Win32_Debug.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.lib" /MACHINE:X86 /DLL Debug\Client.obj
+         Debug\eCEntity.obj
+         Debug\gCSkills_PS.obj
          Debug\Hooking.obj
          Debug\Main.obj
+         Debug\NPCManager.obj
          Coreg.vcxproj -> C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Coreg.dll
      1>Done Building Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Coreg\Coreg.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.31
+Time Elapsed 00:00:01.58
