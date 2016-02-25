@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tools\tools.h"
-#include "game\gCSession.h"
-#include "game\eCEntity.h"
+#include "tools/tools.h"
+#include "game/gCSession.h"
+#include "game/eCEntity.h"
 #include <vector>
 
 typedef unsigned NPCID;

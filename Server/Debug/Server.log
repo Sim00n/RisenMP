@@ -1,0 +1,13 @@
+﻿Build started 2/25/2016 01:02:43.
+     1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Server\Server.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I..\3rdparty\raknet_release\includes /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp
+         Main.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Server.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\3rdparty\raknet_release ws2_32.lib RakNet_Win32_Debug.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Server.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Server.lib" /MACHINE:X86 Debug\Main.obj
+         Server.vcxproj -> C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Server.exe
+     1>Done Building Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Server\Server.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.89

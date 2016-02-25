@@ -1,0 +1,11 @@
+﻿Build started 2/24/2016 18:08:18.
+     1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Server\Server.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\x64\Debug\Server.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\x64\Debug\Server.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\x64\Debug\Server.lib" /MACHINE:X64 x64\Debug\Main.obj
+     1>Main.obj : error LNK2019: unresolved external symbol "public: __cdecl RakNet::SystemAddress::SystemAddress(void)" (??0SystemAddress@RakNet@@QEAA@XZ) referenced in function "void __cdecl RakNet::`dynamic initializer for 'UNASSIGNED_SYSTEM_ADDRESS''(void)" (??__EUNASSIGNED_SYSTEM_ADDRESS@RakNet@@YAXXZ)
+     1>C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\x64\Debug\Server.exe : fatal error LNK1120: 1 unresolved externals
+     1>Done Building Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Server\Server.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.20

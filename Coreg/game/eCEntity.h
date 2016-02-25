@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tools\tools.h"
+#include "tools/tools.h"
 #include "gCSkills_PS.h"
 
 class eCEntity

@@ -33,6 +33,9 @@
     <ClCompile Include="mp\NPCManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mp\ServerClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mp\NPCManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mp\ServerClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "mp\NPCManager.h"
+#include "mp/NPCManager.h"
 
 NPCManager::NPCManager(gCSession &gcsession)
 {

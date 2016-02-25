@@ -3,10 +3,22 @@
 #include <assert.h>
 #include <new>
 
+enum INFORM_TYPES {
+	NETWORK = 0,
+	MESSAGE = 1
+};
+
+static char *INFORM_TYPE_NAMES[] = {
+	"NETWORK",
+	"MESSAGE"
+};
+
 #ifdef DEBUG_BUILD
-#	define DEBUG_M(msg, ...) printf(msg, __VA_ARGS__)
+#	define LOG(msg, ...) printf(msg, __VA_ARGS__)
+#	define INFORM(type, msg) printf("[%s] %s\n", INFORM_TYPE_NAMES[type], msg)
 #else
-#	define DEBUG_M(msg, ...) do {} while (true)
+#	define LOG(msg, ...) do {} while (true)
+#	define INFORM(type, msg) do {} while (true)
 #endif
 
 struct Vec3

@@ -1,4 +1,4 @@
-#include "tools\address.h"
+#include "tools/address.h"
 #include "gCSkills_PS.h"
 
 void _declspec(naked) gCSkills_PS::SetSkillValue(int skill, long newValue)

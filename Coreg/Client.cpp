@@ -1,17 +1,21 @@
 #include "RakPeerInterface.h"
+#include "BitStream.h"
+#include "MessageIdentifiers.h"
+#include "RakNetTypes.h"
 
-#include "tools\address.h"
-#include "tools\tools.h"
+#include "tools/address.h"
+#include "tools/tools.h"
+#include <assert.h>
 
+#include "mp/ServerClient.h"
 #include "mp/NPCManager.h"
+#include "hooking/Hooking.h"
+
+#include "game/gCSession.h"
+#include "game/eCEntity.h"
 
 #include "Client.h"
-#include "hooking\Hooking.h"
 
-#include "game\gCSession.h"
-#include "game\eCEntity.h"
-
-#include <assert.h>
 
 extern unsigned EngineBase = 0;
 extern unsigned GameBase = 0;
@@ -55,18 +59,12 @@ void _declspec(naked) MainLoopHook()
 	}
 }
 
-static RakNet::RakPeerInterface *g_rakPeer = nullptr;
-
 Client::Client(void)
 {
-	g_rakPeer = RakNet::RakPeerInterface::GetInstance();
-
-	g_rakPeer->SetIncomingPassword("QWERTY", 7);
-
-
 	this->initialized = false;
 	this->npc_manager = nullptr;
 	this->gcsession = nullptr;
+	this->player = nullptr;
 
 	Client::Instance = this;
 	Hooking::Initialize();
@@ -114,10 +112,15 @@ void Client::Initialize()
 	}
 
 	this->npc_manager = new NPCManager(*gcsession);
+	this->player = gcsession->GetPlayer();
+	this->server = new ServerClient(*player);
+	assert(this->server);
+
 	this->initialized = true;
 }
 
 bool test = false;
+bool test2 = false;
 NPCID npcID;
 
 void Client::Pulse()
@@ -128,28 +131,37 @@ void Client::Pulse()
 
 	if (gcsession)
 	{
-		eCGeometryEntity *const entity = gcsession->GetPlayer();
-
 		if (GetAsyncKeyState(VK_F3) && !test)
 		{
 			Vec3 playerPos;
-			entity->GetWorldPosition(playerPos);
+			player->GetWorldPosition(playerPos);
 			npcID = npc_manager->SpawnEntity("Titan", playerPos);
-			DEBUG_M("Created NPC with ID: %d\n", npcID);
+			LOG("Created NPC with ID: %d\n", npcID);
 			test = true;
 		}
 
 		if (GetAsyncKeyState(VK_F4) && test)
 		{
 			npc_manager->KillEntity(npcID);
-			DEBUG_M("Deleted NPC with ID: %d\n", npcID);
+			LOG("Deleted NPC with ID: %d\n", npcID);
 			npcID = INVALID_NPC_ID;
 			test = false;
 		}
 
+		if (!test2) {
+			this->server->Connect();
+			test2 = true;
+		}
+
+		// Execute networking
+		//if (server->isConnected())
+			server->Pulse();
+		/*else
+			server->Connect();*/
+
 		/*if (GetAsyncKeyState(VK_F4))
 		{
-			static eCEntityPropertySet* propertySet = entity->GetPropertySet(bCString("gCSkills_PS"));
+			static eCEntityPropertySet* propertySet = player->GetPropertySet(bCString("gCSkills_PS"));
 			assert(propertySet);
 			static gCSkills_PS* skills = static_cast<gCSkills_PS*>(propertySet);
 			assert(skills);
@@ -159,7 +171,7 @@ void Client::Pulse()
 
 		/*if (GetAsyncKeyState(VK_F3))
 		{
-			static eCEntityPropertySet* propertySet = entity->GetPropertySet(bCString("gCSkills_PS"));
+			static eCEntityPropertySet* propertySet = player->GetPropertySet(bCString("gCSkills_PS"));
 			static gCSkills_PS* skills = static_cast<gCSkills_PS*>(propertySet);
 
 			if (skills) {
@@ -184,9 +196,14 @@ Client::~Client(void)
 		this->npc_manager = nullptr;
 	}
 
-	if (g_rakPeer) {
-		RakNet::RakPeerInterface::DestroyInstance(g_rakPeer);
-		g_rakPeer = nullptr;
+	if (this->server) {
+		delete this->server;
+		this->server = nullptr;
+	}
+
+	if (this->player) {
+		delete this->player;
+		this->player = nullptr;
 	}
 
 	Client::Instance = nullptr;

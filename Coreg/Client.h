@@ -1,14 +1,16 @@
 #pragma once
 
-#include "game\gCSession.h"
-
 class NPCManager;
+class ServerClient;
+class gCSession;
+class eCGeometryEntity;
 
 class Client
 {
 private:
 	bool initialized;
 	NPCManager *npc_manager;
+	ServerClient *server;
 
 public:
 	Client(void);
@@ -18,4 +20,5 @@ public:
 
 	static Client *Instance;
 	gCSession *gcsession;
+	eCGeometryEntity *player;
 };
