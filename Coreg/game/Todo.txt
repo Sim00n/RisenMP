@@ -11,3 +11,5 @@ TODO
  - Start doing proper comments with doxygen in mind
 
  - Think about better implementation for INFORM and LOG in tools/tools.h
+
+ - Think about reading server config (keep Linux in mind)

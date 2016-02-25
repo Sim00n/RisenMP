@@ -1,7 +1,6 @@
 #include <Windows.h>
 #include <stdio.h>
-#include "sdk/SteamAPI/steam_api.h"
-#include "Shared/Strings.h"
+#include "../Shared/Strings.h"
 
 bool InjectDLL(const HANDLE process, const char *const dllPath)
 {

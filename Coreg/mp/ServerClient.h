@@ -5,15 +5,12 @@
 #include "MessageIdentifiers.h"
 #include "RakNetTypes.h"
 
+#include "../../Shared/tools.h"
 #include "game/eCEntity.h"
 
 static char *SERVER_HOST = "127.0.0.1";
 static unsigned SERVER_PORT = 6666;
-
-enum NETWORK_MESSAGE {
-	ENTITY_POSITION = ID_USER_PACKET_ENUM + 1,
-	ENTITY_ROTATION = ID_USER_PACKET_ENUM + 2
-};
+const char nickname[MAX_NICKNAME_LENGTH] = "Sim00n";
 
 class ServerClient
 {
@@ -25,6 +22,7 @@ private:
 	eCGeometryEntity *player;
 
 	bool hasConnection;
+	bool initialized;
 public:
 	ServerClient(eCGeometryEntity &entity);
 	~ServerClient();
@@ -34,6 +32,6 @@ public:
 	void Pulse();
 	bool isConnected();
 
-	void SendPosition();
-	void SendRotation();
+	void SendInit();
+	void SendPosRot();
 };

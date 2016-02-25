@@ -1,0 +1,14 @@
+﻿Build started 2/25/2016 13:10:58.
+     1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Shared\Shared.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I.\ /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /D _MBCS /D _CRT_SECURE_NO_WARNINGS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Debug.cpp System.Windows.cpp
+         System.Windows.cpp
+     1>c:\users\sim00n\documents\visual studio 2015\projects\risenmp\shared\string\stringlib.h(170): error C4996: 'vswprintf': function has been changed to conform with the ISO C standard, adding an extra character count parameter. To use the traditional Microsoft version, set _CRT_NON_CONFORMING_SWPRINTFS.
+         c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\corecrt_wstdio.h(1835): note: see declaration of 'vswprintf'
+         Debug.cpp
+         Generating Code...
+     1>Done Building Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Shared\Shared.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.02

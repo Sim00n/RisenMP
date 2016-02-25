@@ -6,10 +6,10 @@
 
 #include <Windows.h>
 
-#include "Shared\Debug.h"
-#include "Shared\System.h"
+#include "Debug.h"
+#include "System.h"
 
-#include "Shared\Strings.h"
+#include "Strings.h"
 
 /**
 * Module loader wrapper class.

@@ -1,5 +1,4 @@
 #include "ServerClient.h"
-#include "tools/tools.h"
 
 
 ServerClient::ServerClient(eCGeometryEntity &entity)
@@ -103,7 +102,7 @@ void ServerClient::Pulse()
 		const unsigned char raknet_identifier = 0;
 		data.Read(raknet_identifier);
 		
-		switch (raknet_identifier)
+		switch (packet->data[0])
 		{
 			case ID_CONNECTION_REQUEST_ACCEPTED: {
 				INFORM(NETWORK, "A successful connection to the server has been established.");
@@ -117,6 +116,16 @@ void ServerClient::Pulse()
 			case ID_CONNECTION_LOST: {
 				INFORM(NETWORK, "We have lost connection to the server.");
 			} break;
+			case ENTITY_INIT_SUCCESS: {
+				INFORM(NETWORK, "Succesfully initiated with server.");
+				initialized = true;
+			} break;
+			case ENTITY_NOT_INITIALIZED: {
+				SendInit();
+			} break;
+			default: {
+				INFORM(NETWORK, "Received some other packet. #fml");
+			} break;
 		}
 
 		peer->DeallocatePacket(packet);
@@ -125,10 +134,12 @@ void ServerClient::Pulse()
 	/**
 	 * Send information to the server
 	 */
-	if (hasConnection)
+	if (hasConnection && initialized)
 	{
-		SendPosition();
-		SendRotation();
+		SendPosRot();
+	}
+	else {
+		SendInit();
 	}
 }
 
@@ -153,30 +164,37 @@ ServerClient::~ServerClient()
 	}
 }
 
-void ServerClient::SendPosition()
+void ServerClient::SendInit()
 {
 	RakNet::BitStream bsOut;
-	unsigned char raknet_identifier = ENTITY_POSITION;
+	unsigned char raknet_identifier = ENTITY_INIT;
 
 	Vec3 playerPosition;
+	bCQuaternion playerRotation;
 	player->GetWorldPosition(playerPosition);
+	player->GetLocalRotation(playerRotation);
 
 	bsOut.Write(raknet_identifier);
+	bsOut.Write((const char *)&nickname, MAX_NICKNAME_LENGTH);
 	bsOut.Write((const char *)&playerPosition, sizeof(Vec3));
-	
+	bsOut.Write((const char *)&playerRotation, sizeof(bCQuaternion));
+
 	RakNet::SystemAddress outAddr(SERVER_HOST, SERVER_PORT);
 	peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, outAddr, false);
 }
 
-void ServerClient::SendRotation()
+void ServerClient::SendPosRot()
 {
 	RakNet::BitStream bsOut;
-	unsigned char raknet_identifier = ENTITY_ROTATION;
+	unsigned char raknet_identifier = ENTITY_POSROT;
 
+	Vec3 playerPosition;
 	bCQuaternion playerRotation;
+	player->GetWorldPosition(playerPosition);
 	player->GetLocalRotation(playerRotation);
 
 	bsOut.Write(raknet_identifier);
+	bsOut.Write((const char *)&playerPosition, sizeof(Vec3));
 	bsOut.Write((const char *)&playerRotation, sizeof(bCQuaternion));
 
 	RakNet::SystemAddress outAddr(SERVER_HOST, SERVER_PORT);

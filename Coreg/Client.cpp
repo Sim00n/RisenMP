@@ -4,8 +4,9 @@
 #include "RakNetTypes.h"
 
 #include "tools/address.h"
-#include "tools/tools.h"
+#include "../Shared/tools.h"
 #include <assert.h>
+#include <ctime>
 
 #include "mp/ServerClient.h"
 #include "mp/NPCManager.h"
@@ -122,6 +123,9 @@ void Client::Initialize()
 bool test = false;
 bool test2 = false;
 NPCID npcID;
+long long elapsedTime = 0;
+long long lastTime = clock();
+long long sysTime = clock();
 
 void Client::Pulse()
 {
@@ -153,12 +157,16 @@ void Client::Pulse()
 			test2 = true;
 		}
 
-		// Execute networking
-		//if (server->isConnected())
+		sysTime = clock();
+		elapsedTime += (sysTime - lastTime);
+		//printf("Elapsed: %lld, system: %lld, last: %lld\n", elapsedTime, sysTime, lastTime);
+		if (elapsedTime/CLOCKS_PER_SEC > .016)
+		{
 			server->Pulse();
-		/*else
-			server->Connect();*/
-
+			elapsedTime = 0;
+		}
+		lastTime = sysTime;
+		
 		/*if (GetAsyncKeyState(VK_F4))
 		{
 			static eCEntityPropertySet* propertySet = player->GetPropertySet(bCString("gCSkills_PS"));
