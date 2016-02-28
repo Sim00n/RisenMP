@@ -33,6 +33,7 @@ Entity * EntityManager::CreateEntity()
 	}
 
 	entities[newID] = new Entity();
+	entities[newID]->systemID = newID;
 
 	return entities[newID];
 }

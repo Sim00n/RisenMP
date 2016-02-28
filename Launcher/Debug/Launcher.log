@@ -1,4 +1,4 @@
-﻿Build started 2/25/2016 13:43:57.
+﻿Build started 2/27/2016 22:20:05.
      1>Project "C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Launcher\Launcher.vcxproj" on node 2 (Build target(s)).
      1>Link:
          Launcher.vcxproj -> C:\Users\Sim00n\Documents\Visual Studio 2015\Projects\RisenMP\Debug\Launcher.exe
@@ -6,4 +6,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.05
+Time Elapsed 00:00:00.03

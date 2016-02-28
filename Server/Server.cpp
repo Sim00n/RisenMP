@@ -1,5 +1,10 @@
 #include "Server.h"
 
+/** Constructor
+ *
+ * Constructor which initializes the local variables including a Raknet
+ * Peer Interface and our Entity Manager.
+ */
 Server::Server(ServerConfig &sc)
 {
 	server_config = sc;
@@ -15,6 +20,17 @@ Server::Server(ServerConfig &sc)
 	shuttingDown = false;
 }
 
+/** Starts the server
+ *
+ * Starts the Raknet networking threads, opens up a server, sets the client limit
+ * and bandwidth limits. It sets an appropriate flags and prints errors if needed.
+ *
+ * @note Even though the server has started, it's actually an attempt to start the
+ *		 server, not the final state. That will be called through a packet sent to
+ *		 itself.
+ *
+ * @return bool True if the server has 
+ */
 bool Server::Start()
 {
 	INFORM(SYSTEM, "Starting Raknet server ... ");
@@ -69,6 +85,10 @@ bool Server::Start()
 	return FALSE;
 }
 
+/** Server main loop
+ *
+ * Server main loop
+ */
 void Server::Pulse()
 {
 	if (!hasStarted)
@@ -77,6 +97,7 @@ void Server::Pulse()
 		return;
 	}
 
+	// Go through each packet that has been received since last Pulse
 	while (packet = peer->Receive())
 	{
 		// Get the packet data into a BitStream
@@ -89,64 +110,65 @@ void Server::Pulse()
 		//switch ((unsigned) raknet_identifier)
 		switch (packet->data[0])
 		{
+			// The server has started, opened its sockets and is ready to operate
 			case ID_CONNECTION_REQUEST_ACCEPTED: {
 				INFORM(RAKNET, "Connection request accepted. Begin receiving data ...");
 			} break;
+
+			// New connection coming from a client - initial contact
 			case ID_NEW_INCOMING_CONNECTION: {
 				INFORM(RAKNET, "New incoming connection.");
-				INFORMS(" '- Client IP: %s\n", packet->systemAddress.ToString());
+				INFORMS("     '- Client IP: %s\n", packet->systemAddress.ToString());
 			} break;
+
+			// Client notyfing the server that they're disconnecting
 			case ID_DISCONNECTION_NOTIFICATION: {
 				INFORM(RAKNET, "A client has disconnected.");
-				INFORMS(" '- Client IP: %s\n", packet->systemAddress.ToString());
+				INFORMS("     '- Client IP: %s\n", packet->systemAddress.ToString());
 			} break;
+
+			// Client timed out
 			case ID_CONNECTION_LOST: {
 				INFORM(RAKNET, "A client lost the connection.");
-				INFORMS(" '- Client IP: %s\n", packet->systemAddress.ToString());
+				INFORMS("     '- Client IP: %s\n", packet->systemAddress.ToString());
 			} break;
+
+			// Client sending initial information about itself
 			case ENTITY_INIT: {
 				INFORM(RAKNET, "Getting init from clinet.");
+				INFORMS("     '- Client IP: %s\n", packet->systemAddress.ToString());
+				
 				Entity *newEntity = entity_manager->CreateEntity();
 				data.Read((char *)&newEntity->nickname, sizeof(MAX_NICKNAME_LENGTH));
 				data.Read((char *)&newEntity->pos, sizeof(Vec3));
 				data.Read((char *)&newEntity->rot, sizeof(bCQuaternion));
 				
 				newEntity->guid = packet->guid;
-				newEntity->ipaddress = packet->systemAddress.ToString();
+				newEntity->ipaddress = packet->systemAddress;
 				newEntity->initialized = true;
 
-				RakNet::BitStream bsOut;
-				unsigned char raknet_identifier = ENTITY_INIT_SUCCESS;
-
-				bsOut.Write(raknet_identifier);
-				peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+				SendInitSuccess(newEntity->systemID, packet->systemAddress);
 			} break;
+
+			// Client sending update with its position and rotation
 			case ENTITY_POSROT: {
-				INFORM(RAKNET, "Getting posrot from client.");
 				PLAYERID playerID = entity_manager->getEntityID(packet->guid);
 				if (playerID != INVALID_PLAYERID)
 				{
 					Entity *player = entity_manager->getEntity(playerID);
 					if (player->initialized)
 					{
-						INFORM(RAKNET, "Posrot, processing data");
 						data.Read((char *)&player->pos, sizeof(Vec3));
 						data.Read((char *)&player->rot, sizeof(bCQuaternion));
-						player->printDebug();
+						//player->printDebug();
+						RelayClientInformation(playerID, *player);
+					} else {
+						SendNotInitialized(packet->systemAddress);
 					}
-					else {
-						INFORM(RAKNET, "Posrot, not initialized else");
-						RakNet::BitStream bsOut;
-						unsigned char raknet_identifier = ENTITY_NOT_INITIALIZED;
-
-						bsOut.Write(raknet_identifier);
-						peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
-					}
-				}
-				else {
-					INFORM(ERR, "Can not find player ID");
 				}
 			} break;
+
+			// Catch-all in case some other callback is called
 			default: {
 				INFORM(RAKNET, "Received some other data. Here it is:");
 				unsigned char *otherData = data.GetData();
@@ -160,11 +182,114 @@ void Server::Pulse()
 	}
 }
 
+/** Send INIT_SUCCESS flag to client
+ *
+ * Sends a message to the client that ackgnowledges
+ * the server receiving its initial contact.
+ *
+ * @param RakNet::SystemAddress the address (client) to which the flag should be sent
+ */
+void Server::SendInitSuccess(PLAYERID playerID, RakNet::SystemAddress addr)
+{
+	RakNet::BitStream bsOut;
+	unsigned char raknet_identifier = ENTITY_INIT_SUCCESS;
+
+	bsOut.Write(raknet_identifier);
+	bsOut.Write(playerID);
+	peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, addr, false);
+}
+
+/** Send ENTITY_NOT_INITIALIZED flag to client
+ *
+ * Sends a message to the client that indicates that the client haven't sent
+ * initial information but tried to send other packets. This won't be allowed.
+ *
+ * @param RakNet::SystemAddress the address (client) to which the flag should be sent
+ */
+void Server::SendNotInitialized(RakNet::SystemAddress addr)
+{
+	RakNet::BitStream bsOut;
+	unsigned char raknet_identifier = ENTITY_NOT_INITIALIZED;
+
+	bsOut.Write(raknet_identifier);
+	peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, addr, false);
+}
+
+void Server::SendNewClientNotification(PLAYERID connectingID, Entity &connectingPlayer)
+{
+	RakNet::BitStream bsOut;
+	unsigned char raknet_identifier = ENTITY_NEW_CLIENT_NOTE;
+
+	bsOut.Write(raknet_identifier);
+	bsOut.Write(connectingID);
+	bsOut.Write((const char *)&connectingPlayer.nickname, MAX_NICKNAME_LENGTH);
+	bsOut.Write((const char *)&connectingPlayer.pos, sizeof(Vec3));
+	bsOut.Write((const char *)&connectingPlayer.rot, sizeof(bCQuaternion));
+
+	for (PLAYERID i = 0; i < SERVER_PLAYER_LIMIT; i++)
+	{
+		if(entity_manager->entities[i] && i != connectingID)
+		{
+			peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, entity_manager->entities[i]->ipaddress, false);
+		}
+	}
+}
+
+void Server::SendCLientLeavingNotification(PLAYERID disconnectingID)
+{
+	RakNet::BitStream bsOut;
+	unsigned char raknet_identifier = ENTITY_CLIENT_LEAVING_NOTE;
+
+	bsOut.Write(raknet_identifier);
+	bsOut.Write(disconnectingID);
+
+	for (PLAYERID i = 0; i < SERVER_PLAYER_LIMIT; i++)
+	{
+		if (entity_manager->entities[i] && i != disconnectingID)
+		{
+			peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, entity_manager->entities[i]->ipaddress, false);
+		}
+	}
+}
+
+void Server::RelayClientInformation(PLAYERID playerID, Entity &player)
+{
+	RakNet::BitStream bsOut;
+	unsigned char raknet_identifier = ENTITY_POSROT;
+
+	bsOut.Write(raknet_identifier);
+	bsOut.Write(playerID);
+	bsOut.Write((const char *)&player.pos, sizeof(Vec3));
+	bsOut.Write((const char *)&player.rot, sizeof(bCQuaternion));
+
+	for (PLAYERID i = 0; i < SERVER_PLAYER_LIMIT; i++)
+	{
+		if (entity_manager->entities[i] && i != playerID)
+		{
+			peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, entity_manager->entities[i]->ipaddress, false);
+		}
+	}
+}
+
+
+
+
+
+/** Tells whether the server is shutting down.
+ *
+ * Tells whether the server is shutting down.
+ *
+ * @return bool True if the server is shutting down; False otherwise
+ */
 bool Server::isShuttingDown()
 {
 	return shuttingDown;
 }
 
+/** Destructor
+ *
+ * Destructor which cleans up the server variables.
+ */
 Server::~Server()
 {
 	if (peer) {

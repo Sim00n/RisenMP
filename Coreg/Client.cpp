@@ -5,6 +5,7 @@
 
 #include "tools/address.h"
 #include "../Shared/tools.h"
+#include "game/GUI2.h"
 #include <assert.h>
 #include <ctime>
 
@@ -16,7 +17,6 @@
 #include "game/eCEntity.h"
 
 #include "Client.h"
-
 
 extern unsigned EngineBase = 0;
 extern unsigned GameBase = 0;
@@ -36,6 +36,21 @@ extern unsigned SetSkillValueAddr = 0;
 extern unsigned GetPropertySetAddr = 0;
 extern unsigned GetSkillMaxValueAddr = 0;
 extern unsigned GetSkillBaseValueAddr = 0;
+
+extern unsigned ContinueAddr = 0;
+extern unsigned OpenAlchemyAddr = 0;
+extern unsigned OpenAlterAddr = 0;
+extern unsigned OpenAnvilAddr = 0;
+extern unsigned OpenCookingAddr = 0;
+extern unsigned OpenCoolWeaponAddr = 0;
+extern unsigned OpenForgeAddr = 0;
+extern unsigned OpenFryingAddr = 0;
+extern unsigned OpenGoldsmithAddr = 0;
+extern unsigned OpenGrindStoneAddr = 0;
+extern unsigned OpenLootAddr = 0;
+extern unsigned OpenPickpocketAddr = 0;
+extern unsigned OpenWriteScrollAddr = 0;
+
 
 Client *Client::Instance = nullptr;
 
@@ -106,6 +121,20 @@ void Client::Initialize()
 		Hooking::PostInit();
 	}
 
+	ContinueAddr = ScriptBase + 0x00038520;
+	OpenAlchemyAddr = ScriptBase + 0x00037A20;
+	OpenAlterAddr = ScriptBase + 0x00038080;
+	OpenAnvilAddr = ScriptBase + 0x00037E40;
+	OpenCookingAddr = ScriptBase + 0x00037AD0;
+	OpenCoolWeaponAddr = ScriptBase + 0x00037EF0;
+	OpenForgeAddr = ScriptBase + 0x00037D90;
+	OpenFryingAddr = ScriptBase + 0x00037B80;
+	OpenGoldsmithAddr = ScriptBase + 0x00037C30;
+	OpenGrindStoneAddr = ScriptBase + 0x00037FA0;
+	OpenLootAddr = ScriptBase + 0x00038210;
+	OpenPickpocketAddr = ScriptBase + 0x00038160;
+	OpenWriteScrollAddr = ScriptBase + 0x00037CE0;
+
 	// Get the game session (important!)
 	this->gcsession = *(gCSession **)(ScriptBase + 0x03109A0);
 	if (!this->gcsession) {
@@ -114,7 +143,7 @@ void Client::Initialize()
 
 	this->npc_manager = new NPCManager(*gcsession);
 	this->player = gcsession->GetPlayer();
-	this->server = new ServerClient(*player);
+	this->server = new ServerClient(*npc_manager, *player);
 	assert(this->server);
 
 	this->initialized = true;
@@ -122,7 +151,7 @@ void Client::Initialize()
 
 bool test = false;
 bool test2 = false;
-NPCID npcID;
+PLAYERID npcID;
 long long elapsedTime = 0;
 long long lastTime = clock();
 long long sysTime = clock();
@@ -130,28 +159,14 @@ long long sysTime = clock();
 void Client::Pulse()
 {
 	// Initialize  the rest of the DLLs and get gCSession
-	if(!this->initialized)
+	// GUI2::Continue will force the user GUI click on "Continue" button
+	if (!this->initialized) {
 		this->Initialize();
+		GUI2::Continue();
+	}
 
 	if (gcsession)
 	{
-		if (GetAsyncKeyState(VK_F3) && !test)
-		{
-			Vec3 playerPos;
-			player->GetWorldPosition(playerPos);
-			npcID = npc_manager->SpawnEntity("Titan", playerPos);
-			LOG("Created NPC with ID: %d\n", npcID);
-			test = true;
-		}
-
-		if (GetAsyncKeyState(VK_F4) && test)
-		{
-			npc_manager->KillEntity(npcID);
-			LOG("Deleted NPC with ID: %d\n", npcID);
-			npcID = INVALID_NPC_ID;
-			test = false;
-		}
-
 		if (!test2) {
 			this->server->Connect();
 			test2 = true;

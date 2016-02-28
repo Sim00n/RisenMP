@@ -6,20 +6,19 @@ NPCManager::NPCManager(gCSession &gcsession)
 	this->gcsession = &gcsession;
 
 	// Initialize entities array
-	for (NPCID i = 0; i < MAX_NPC_COUNT; i++) {
+	for (PLAYERID i = 0; i < MAX_NPC_COUNT; i++) {
 		entities[i] = nullptr;
 	}
 }
 
 NPCManager::~NPCManager() {}
 
-NPCID NPCManager::SpawnEntity(char *name, Vec3 pos)
+eCGeometryEntity * NPCManager::SpawnEntity(PLAYERID playerID, char *name, Vec3 pos)
 {
-	NPCID newID = findEmptyIndex();
-	if (newID == INVALID_NPC_ID)
+	if (playerID == INVALID_PLAYERID)
 	{
 		throw "Reached the limit for NPCs. This must be a memory leak. Pls fix.";
-		return newID;
+		return nullptr;
 	}
 
 	bCString npcName(name);
@@ -28,24 +27,24 @@ NPCID NPCManager::SpawnEntity(char *name, Vec3 pos)
 	posMtx.Identity();
 	posMtx.Transform(pos);
 
-	entities[newID] = static_cast<eCGeometryEntity *>(this->gcsession->SpawnEntity(npcName, posMtx, false));
-	return newID;
+	entities[playerID] = static_cast<eCGeometryEntity *>(this->gcsession->SpawnEntity(npcName, posMtx, false));
+	return entities[playerID];
 }
 
-NPCID NPCManager::SpawnEntity(char *name)
+eCGeometryEntity * NPCManager::SpawnEntity(PLAYERID playerID, char *name)
 {
 	Vec3 pos(0.0f, 0.0f, 0.0f);
-	return this->SpawnEntity(name, pos);
+	return this->SpawnEntity(playerID, name, pos);
 }
 
-NPCID NPCManager::SpawnEntity()
+eCGeometryEntity * NPCManager::SpawnEntity(PLAYERID playerID)
 {
 	char *name = "UnknownNPC";
 	Vec3 pos(0.0f, 0.0f, 0.0f);
-	return this->SpawnEntity(name, pos);
+	return this->SpawnEntity(playerID, name, pos);
 }
 
-void NPCManager::KillEntity(NPCID id)
+void NPCManager::KillEntity(PLAYERID id)
 {
 	if (entities[id]) {
 		entities[id]->Kill();
@@ -53,17 +52,12 @@ void NPCManager::KillEntity(NPCID id)
 	}
 }
 
-eCGeometryEntity * NPCManager::GetNPC(NPCID id)
+bool NPCManager::isSpawned(PLAYERID playerID)
 {
-	return entities[id];
+	return entities[playerID] != nullptr;
 }
 
-NPCID NPCManager::findEmptyIndex()
+eCGeometryEntity * NPCManager::GetNPC(PLAYERID id)
 {
-	for (NPCID i = 0; i < MAX_NPC_COUNT; i++) {
-		if (entities[i] == nullptr)
-			return i;
-	}
-	
-	return INVALID_NPC_ID;
+	return entities[id];
 }

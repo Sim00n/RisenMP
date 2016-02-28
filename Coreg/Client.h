@@ -18,6 +18,7 @@ public:
 	void Pulse();
 	~Client(void);
 
+	
 	static Client *Instance;
 	gCSession *gcsession;
 	eCGeometryEntity *player;

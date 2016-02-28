@@ -7,9 +7,10 @@ class Entity
 {
 public:
 	RakNet::RakNetGUID guid;
+	PLAYERID systemID;
 
 	char nickname[MAX_NICKNAME_LENGTH];
-	const char *ipaddress;
+	RakNet::SystemAddress ipaddress;
 	
 	Vec3 pos;
 	bCQuaternion rot;

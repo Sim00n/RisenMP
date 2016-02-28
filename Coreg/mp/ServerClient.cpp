@@ -1,8 +1,9 @@
 #include "ServerClient.h"
 
 
-ServerClient::ServerClient(eCGeometryEntity &entity)
+ServerClient::ServerClient(NPCManager &npc_manager,  eCGeometryEntity &entity)
 {
+	this->npc_manager = &npc_manager;
 	player = &entity;
 
 	peer = RakNet::RakPeerInterface::GetInstance();
@@ -15,6 +16,7 @@ ServerClient::ServerClient(eCGeometryEntity &entity)
 	
 	LOG("GUID: %s, Addr: %s\n", connectionGUID.rakNetGuid.ToString(), connectionGUID.systemAddress.ToString());
 
+	myID = INVALID_PLAYERID;
 	packet = nullptr;
 	hasConnection = false;
 }
@@ -118,10 +120,53 @@ void ServerClient::Pulse()
 			} break;
 			case ENTITY_INIT_SUCCESS: {
 				INFORM(NETWORK, "Succesfully initiated with server.");
+				data.Read(myID);
 				initialized = true;
 			} break;
 			case ENTITY_NOT_INITIALIZED: {
 				SendInit();
+			} break;
+			case ENTITY_NEW_CLIENT_NOTE: {
+				PLAYERID playerID;
+				char *name;
+				Vec3 pos;
+				bCQuaternion rot;
+
+				data.Read(playerID);
+				data.Read((char *)&name, MAX_NICKNAME_LENGTH);
+				data.Read((char *)&pos, sizeof(Vec3));
+				data.Read((char *)&rot, sizeof(bCQuaternion));
+
+				if (playerID != myID)
+				{
+					eCGeometryEntity *newPlayer = npc_manager->SpawnEntity(playerID, "PC_Hero");
+					newPlayer->SetWorldPosition(pos);
+					newPlayer->SetLocalRotation(rot);
+				}
+			} break;
+			case ENTITY_CLIENT_LEAVING_NOTE: {
+				PLAYERID playerID;
+				data.Read(playerID);
+				npc_manager->KillEntity(playerID);
+			} break;
+			case ENTITY_POSROT: {
+				PLAYERID playerID;
+				Vec3 pos;
+				bCQuaternion rot;
+
+				data.Read(playerID);
+				data.Read((char *)&pos, sizeof(Vec3));
+				data.Read((char *)&rot, sizeof(bCQuaternion));
+
+				if (playerID != myID)
+				{
+					eCGeometryEntity *player = npc_manager->GetNPC(playerID);
+					if (player)
+					{
+						player->SetWorldPosition(pos);
+						player->SetLocalRotation(rot);
+					}
+				}
 			} break;
 			default: {
 				INFORM(NETWORK, "Received some other packet. #fml");

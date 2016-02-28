@@ -3,6 +3,7 @@
 Entity::Entity()
 {
 	guid = RakNet::UNASSIGNED_RAKNET_GUID;
+	systemID = INVALID_PLAYERID;
 	
 	for (int i = 0; i < MAX_NICKNAME_LENGTH; i++)
 		nickname[i] = '\0';
@@ -33,15 +34,10 @@ bool Entity::isComplete()
 
 void Entity::printDebug()
 {
-	INFORMS("[DEBUG] %s raportuje pozycje: %f, %f, %f", ipaddress, pos.x, pos.y, pos.z);
-	INFORMS("[DEBUG] %s raportuje rotacje: %f, %f, %f, %f", ipaddress, rot.x, rot.y, rot.z, rot.theta);
+	INFORMS("[DEBUG] %s raportuje pozycje: %f, %f, %f", ipaddress.ToString(), pos.x, pos.y, pos.z);
+	INFORMS("[DEBUG] %s raportuje rotacje: %f, %f, %f, %f", ipaddress.ToString(), rot.x, rot.y, rot.z, rot.theta);
 }
 
 Entity::~Entity()
 {
-	if (ipaddress)
-	{
-		delete ipaddress;
-		ipaddress = nullptr;
-	}
 }

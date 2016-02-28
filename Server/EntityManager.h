@@ -4,12 +4,12 @@
 
 const unsigned SERVER_PLAYER_LIMIT = 500;
 typedef unsigned PLAYERID;
-const PLAYERID INVALID_PLAYERID(~0);
 
 class EntityManager
 {
-private:
+public:
 	Entity *entities[SERVER_PLAYER_LIMIT];
+private:
 	PLAYERID findEmptyID();
 
 public:

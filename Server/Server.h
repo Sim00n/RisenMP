@@ -34,4 +34,12 @@ public:
 	bool Start();
 	void Pulse();
 	bool isShuttingDown();
+
+	void SendInitSuccess(PLAYERID playerID, RakNet::SystemAddress addr);
+	void SendNotInitialized(RakNet::SystemAddress addr);
+	
+	void SendNewClientNotification(PLAYERID connectingID, Entity &connectingPlayer);
+	void SendCLientLeavingNotification(PLAYERID disconnectingID);
+
+	void RelayClientInformation(PLAYERID playerID, Entity &player);
 };
